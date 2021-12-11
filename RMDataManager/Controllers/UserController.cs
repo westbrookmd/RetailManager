@@ -12,6 +12,7 @@ namespace RMDataManager.Controllers
     [Authorize]
     public class UserController : ApiController
     {
+        [HttpGet]
         public UserModel GetById()
         {
             //current logged in user's id

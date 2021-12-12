@@ -33,13 +33,19 @@
         <!-- Column 0 -->
         <TextBlock Text="Items"  Grid.Row="1" Grid.Column="0"/>
         <ListBox x:Name="Products" Grid.Row="2" Grid.Column="0"
-                 MinHeight="200" MinWidth="150"/>
+                 MinHeight="200" MinWidth="150">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding ProductName}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <!-- Column 1-->
         <StackPanel Orientation="Vertical" Grid.Column="1"
                     Grid.Row="2" Margin="20 0">
             <TextBlock Text="Quantity" />
-            <TextBlock x:Name="ItemQuantity" MinWidth="100" Margin="0 0 0 10"/>
+            <TextBox x:Name="ItemQuantity" MinWidth="100" Margin="0 0 0 10"/>
             <Button x:Name="AddToCart" Content="Add to Cart" Margin="0 0 0 30"
                     Padding="5"/>
             <Button x:Name="RemoveFromCart" Content="Remove from Cart"

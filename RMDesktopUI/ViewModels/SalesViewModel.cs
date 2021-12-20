@@ -45,9 +45,22 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        private BindingList<ProductModel> _cart;
+        private ProductModel _selectedProduct;
 
-        public BindingList<ProductModel> Cart
+        public ProductModel SelectedProduct
+        {
+            get { return _selectedProduct; }
+            set 
+            {
+                _selectedProduct = value;
+                NotifyOfPropertyChange(() => SelectedProduct);
+            }
+        }
+
+
+        private BindingList<CartItemModel> _cart;
+
+        public BindingList<CartItemModel> Cart
         {
             get { return _cart; }
             set 
@@ -87,6 +100,7 @@ namespace RMDesktopUI.ViewModels
             {
                 _itemQuantity = value; 
                 NotifyOfPropertyChange(() => ItemQuantity);
+                NotifyOfPropertyChange(() => CanAddToCart);
             }
         }
 
@@ -98,7 +112,11 @@ namespace RMDesktopUI.ViewModels
                 //logic to determine if it can be set to true
 
                 // Make sure something is selected
-                // Make sure there is an item quantity
+                // Make sure there is an item quantity and not null
+                if (ItemQuantity > 0 && SelectedProduct?.QuantityInStock >= ItemQuantity)
+                {
+                    output = true;
+                }
 
                 return output;
 

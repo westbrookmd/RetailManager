@@ -12,19 +12,18 @@ namespace RMDesktopUI.ViewModels
     {
         private SalesViewModel _salesVM;
         private IEventAggregator _events;
-        private SimpleContainer _container;
         
-        public ShellViewModel(IEventAggregator events, SalesViewModel salesVM, SimpleContainer container)
+        
+        public ShellViewModel(IEventAggregator events, SalesViewModel salesVM)
         {
             _events = events;
             _salesVM = salesVM;
-            _container = container;
 
             _events.Subscribe(this); // Wires this instance to listening for events
 
             // Whenver we stop using this, the view model will go away.
             // It will never have information from a previous form
-            ActivateItem(_container.GetInstance<LoginViewModel>()); 
+            ActivateItem(IoC.Get<LoginViewModel>()); 
         }
 
         public void Handle(LogOnEvent message)

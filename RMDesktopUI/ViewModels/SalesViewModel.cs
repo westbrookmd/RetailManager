@@ -1,5 +1,6 @@
 ﻿using Caliburn.Micro;
 using RMDesktopUI.Library.Api;
+using RMDesktopUI.Library.Helpers;
 using RMDesktopUI.Library.Models;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,12 @@ namespace RMDesktopUI.ViewModels
     public class SalesViewModel : Screen
     {
         IProductEndpoint _productEndpoint;
+        IConfigHelper _configHelper;
 
-        public SalesViewModel(IProductEndpoint productEndpoint)
+        public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper)
         {
             _productEndpoint = productEndpoint;
+            _configHelper = configHelper;
         }
 
         // C# doesn't allow asynchronous calls in the constructor so this is the workaround
@@ -45,9 +48,23 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        private BindingList<ProductModel> _cart;
+        private ProductModel _selectedProduct;
 
-        public BindingList<ProductModel> Cart
+        public ProductModel SelectedProduct
+        {
+            get { return _selectedProduct; }
+            set 
+            {
+                _selectedProduct = value;
+                NotifyOfPropertyChange(() => SelectedProduct);
+                NotifyOfPropertyChange(() => CanAddToCart);
+            }
+        }
+
+
+        private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
+
+        public BindingList<CartItemModel> Cart
         {
             get { return _cart; }
             set 
@@ -59,34 +76,61 @@ namespace RMDesktopUI.ViewModels
 
         public string SubTotal
         {
-            // TODO: replace with calculation
-            get { return "$0.00"; }  
+            get
+            {
+                 return CalculateSubTotal().ToString("C"); //converting to currency 
+            }  
         }
 
+        private decimal CalculateSubTotal()
+        {
+            decimal subTotal = 0;
+
+            foreach (var item in Cart)
+            {
+                subTotal += (item.Product.RetailPrice * item.QuantityInCart);
+            }
+            return subTotal;
+        }
+        private decimal CalculateTax()
+        {
+            decimal taxAmount = 0;
+            decimal taxRate = _configHelper.GetTaxRate() / 100;
+
+            taxAmount = Cart
+                .Where(x => x.Product.IsTaxable)
+                .Sum(x => x.Product.RetailPrice * x.QuantityInCart * taxRate);
+
+            return taxAmount;
+        }
         public string Tax
         {
-            // TODO: replace with calculation
-            get { return "$0.00"; }
+            get {
+                return CalculateTax().ToString("C"); //converting to currency 
+            }
         }
-
         public string Total
         {
-            // TODO: replace with calculation
-            get { return "$0.00"; }
+            get 
+            {
+                decimal total = CalculateSubTotal() + CalculateTax();
+                return total.ToString("C"); 
+            }
         }
 
-
-
-
-        private int _itemQuantity;
+        private int _itemQuantity = 1;
 
         public int ItemQuantity
         {
-            get { return _itemQuantity; }
+            get 
+            { 
+                return _itemQuantity; 
+            }
             set 
             {
                 _itemQuantity = value; 
                 NotifyOfPropertyChange(() => ItemQuantity);
+                NotifyOfPropertyChange(() => CanAddToCart);
             }
         }
 
@@ -95,10 +139,12 @@ namespace RMDesktopUI.ViewModels
             get
             {
                 bool output = false;
-                //logic to determine if it can be set to true
-
                 // Make sure something is selected
-                // Make sure there is an item quantity
+                // Make sure there is an item quantity and not null
+                if (ItemQuantity > 0 && SelectedProduct?.QuantityInStock >= ItemQuantity)
+                {
+                    output = true;
+                }
 
                 return output;
 
@@ -108,7 +154,30 @@ namespace RMDesktopUI.ViewModels
 
         public void AddToCart()
         {
+            CartItemModel existingItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct); // Find existing items in cart that are equal to the selected item object
 
+            if (existingItem != null)
+            {
+                existingItem.QuantityInCart += ItemQuantity;
+                // update the item quantity. Can't use notify property so this is a workaround
+                //Cart.Remove(existingItem);
+                //Cart.Add(existingItem);
+                Cart.ResetBindings();
+            }
+            else
+            {
+                CartItemModel item = new CartItemModel
+                {
+                    Product = SelectedProduct,
+                    QuantityInCart = ItemQuantity
+                };
+                Cart.Add(item);
+            }
+            SelectedProduct.QuantityInStock -= ItemQuantity; // make sure they can't put too many items in cart
+            ItemQuantity = 1; // reset the quantity back to 1 after clicking addtocart button
+            NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         public bool CanRemoveFromCart
@@ -126,7 +195,9 @@ namespace RMDesktopUI.ViewModels
 
         public void RemoveFromCart()
         {
-
+            NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
         }
 
         public bool CanCheckOut

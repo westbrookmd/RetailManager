@@ -14,10 +14,13 @@ namespace RMDesktopUI.ViewModels
     public class SalesViewModel : Screen
     {
         IProductEndpoint _productEndpoint;
+        ISaleEndpoint _saleEndpoint;
         IConfigHelper _configHelper;
+        
 
-        public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper)
+        public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper, ISaleEndpoint saleEndpoint)
         {
+            _saleEndpoint = saleEndpoint;
             _productEndpoint = productEndpoint;
             _configHelper = configHelper;
         }
@@ -220,7 +223,7 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
-        public void CheckOut()
+        public async Task CheckOut()
         {
             SaleModel sale = new SaleModel();
             foreach (var item in Cart)
@@ -231,8 +234,7 @@ namespace RMDesktopUI.ViewModels
                     Quantity = item.QuantityInCart
                 });
             }
-            
-            // post to api
+            await _saleEndpoint.PostSale(sale);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using RMDataManager.Library.Models;
+﻿using Microsoft.AspNet.Identity;
+using RMDataManager.Library.Internal.DataAccess;
+using RMDataManager.Library.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +21,10 @@ namespace RMDataManager.Controllers
         //}
         public void Post(SaleModel sale)
         {
-            Console.WriteLine();
+            SaleData data = new SaleData();
+            string cashierId = RequestContext.Principal.Identity.GetUserId();
+
+            data.SaveSale(sale, cashierId);
         }
     }
 }

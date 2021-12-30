@@ -235,6 +235,7 @@ namespace RMDesktopUI.ViewModels
             NotifyOfPropertyChange(() => SubTotal);
             NotifyOfPropertyChange(() => Tax);
             NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanAddToCart);
             NotifyOfPropertyChange(() => CanCheckOut);
         }
 

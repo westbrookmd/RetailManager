@@ -72,6 +72,20 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
+        private async Task ResetSalesViewModel()
+        {
+            Cart = new BindingList<CartItemDisplayModel>();
+            // TODO: verify SelectedCartItem is cleared to default as well
+            // reset to defaults
+            await LoadProducts();
+
+            // update the bindings
+            NotifyOfPropertyChange(() => SubTotal);
+            NotifyOfPropertyChange(() => Tax);
+            NotifyOfPropertyChange(() => Total);
+            NotifyOfPropertyChange(() => CanCheckOut);
+        }
+
         private CartItemDisplayModel _selectedCartItem;
         public CartItemDisplayModel SelectedCartItem
         {
@@ -258,6 +272,7 @@ namespace RMDesktopUI.ViewModels
 
         public async Task CheckOut()
         {
+            // TODO: catch exceptions
             SaleModel sale = new SaleModel();
             foreach (var item in Cart)
             {
@@ -268,6 +283,8 @@ namespace RMDesktopUI.ViewModels
                 });
             }
             await _saleEndpoint.PostSale(sale);
+
+            await ResetSalesViewModel();
         }
     }
 }

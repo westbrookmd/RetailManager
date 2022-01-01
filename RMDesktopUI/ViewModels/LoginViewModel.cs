@@ -10,8 +10,8 @@ namespace RMDesktopUI.ViewModels
     public class LoginViewModel : Screen
     {
         // private backing fields that supply and hold the values for this property
-        private string _userName;
-        private string _password;
+        private string _userName = "westbrookmd1@gmail.com";
+        private string _password = "Marshall1";
         private IAPIHelper _apiHelper;
         IEventAggregator _events;
 

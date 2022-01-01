@@ -5,17 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RMDesktopUI.Library.Helpers
+namespace RMDataManager.Library
 {
-    //using this since we aren't in .NET Core yet
-    public class ConfigHelper : IConfigHelper
+    public class ConfigHelper
     {
-        public decimal GetTaxRate()
+        public static decimal GetTaxRate()
         {
 
             // get the tax rate from the app settings. This could be replaced with a key vault in .NET Core
             // or a database could be used, but this is just as single value
-            // TODO: replace with api call
             string rateText = ConfigurationManager.AppSettings["taxRate"];
 
             bool isValidTaxRate = Decimal.TryParse(rateText, out decimal output);

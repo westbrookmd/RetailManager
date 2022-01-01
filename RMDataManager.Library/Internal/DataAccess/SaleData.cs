@@ -55,20 +55,37 @@ namespace RMDataManager.Library.Internal.DataAccess
             sale.Total = sale.SubTotal + sale.Tax;
 
             // save the sale model
-            SqlDataAccess sql = new SqlDataAccess();
-            sql.SaveData("dbo.spSale_Insert", sale, "RMData"); //can infer type from "sale"
 
-            // get the id from the sale model
-            sale.Id = sql.LoadData<int, dynamic>("dbo.spSale_Lookup", new { sale.CashierId, sale.SaleDate }, "RMData").FirstOrDefault();
-
-            // finish filling in the sale detail models and save them
-            // TODO: check the amount of items, if over a certain amount, create a table value parameter to reduce sql calls
-            foreach (var item in details)
+            using (SqlDataAccess sql = new SqlDataAccess())
             {
-                item.SaleId = sale.Id;
-                sql.SaveData("dbo.spSaleDetail_Insert", item, "RMData");
-            }
 
+                try
+                {
+                    sql.StartTransaction("RMData");
+                    
+
+                    sql.SaveDataInTransaction("dbo.spSale_Insert", sale); //can infer type from "sale"
+
+                    // get the id from the sale model
+                    sale.Id = sql.LoadDataInTransaction<int, dynamic>("dbo.spSale_Lookup", new { sale.CashierId, sale.SaleDate }).FirstOrDefault();
+
+                    // finish filling in the sale detail models and save them
+                    // TODO: check the amount of items, if over a certain amount, create a table value parameter to reduce sql calls
+                    foreach (var item in details)
+                    {
+                        item.SaleId = sale.Id;
+                        sql.SaveDataInTransaction("dbo.spSaleDetail_Insert", item);
+                    }
+                    // explicit call - this should be called implicitly as well - Closes transaction
+                    //sql.CommitTransaction();
+                }
+                catch
+                {
+
+                    sql.RollbackTransaction();
+                    throw;
+                }
+            }
             
         }
 

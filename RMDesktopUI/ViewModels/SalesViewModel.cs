@@ -7,9 +7,11 @@ using RMDesktopUI.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace RMDesktopUI.ViewModels
 {
@@ -19,14 +21,18 @@ namespace RMDesktopUI.ViewModels
         ISaleEndpoint _saleEndpoint;
         IConfigHelper _configHelper;
         IMapper _mapper;
+        private readonly StatusInfoViewModel _status;
+        private readonly IWindowManager _window;
 
         public SalesViewModel(IProductEndpoint productEndpoint, IConfigHelper configHelper, ISaleEndpoint saleEndpoint,
-            IMapper mapper)
+            IMapper mapper, StatusInfoViewModel status, IWindowManager window)
         {
             _saleEndpoint = saleEndpoint;
             _productEndpoint = productEndpoint;
             _configHelper = configHelper;
             _mapper = mapper;
+            _status = status;
+            _window = window;
         }
 
         // C# doesn't allow asynchronous calls in the constructor so this is the workaround
@@ -34,7 +40,31 @@ namespace RMDesktopUI.ViewModels
         protected override async void OnViewLoaded(object view)
         {
             base.OnViewLoaded(view);
-            await LoadProducts();
+            try
+            {
+                await LoadProducts();
+            }
+            catch (Exception ex)
+            {
+                dynamic settings = new ExpandoObject();
+                settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                settings.ResizeMode = ResizeMode.NoResize;
+                settings.Title = "System Error";
+
+
+                if (ex.Message == "Unauthorized")
+                {
+                    _status.UpdateMessage("Unathorized Access", "You do not have permission to interact with the Sales Form.");
+                    _window.ShowDialog(_status, null, settings); 
+                }
+                else
+                {
+                    _status.UpdateMessage("Fatal Exception", ex.Message);
+                    _window.ShowDialog(_status, null, settings);
+                }
+
+                TryClose();
+            }
         }
 
         private async Task LoadProducts()
@@ -270,6 +300,8 @@ namespace RMDesktopUI.ViewModels
             }
         }
 
+        public StatusInfoViewModel Status { get; }
+
         public async Task CheckOut()
         {
             // TODO: catch exceptions
@@ -282,6 +314,7 @@ namespace RMDesktopUI.ViewModels
                     Quantity = item.QuantityInCart
                 });
             }
+            //TODO: surround with try catch and send pop up box for error
             await _saleEndpoint.PostSale(sale);
 
             await ResetSalesViewModel();

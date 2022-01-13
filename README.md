@@ -1,6 +1,8 @@
 # Retail Manager
 A retail management system. Based on TimCo Retail Manager, a tutorial series by Tim Corey.
 
+![Retail Manager Screenshot](https://i.imgur.com/RQVnjxP.png)
+
 # How It Started
 My retail manager personal project was originally based on a tutorial series by Tim Corey called "TimCo Retail Manager". The project started in .NET Framework with a WPF application, ASP.NET Web API, and SQL Server with Dapper.
 

@@ -51,6 +51,11 @@ namespace RMDesktopUI.ViewModels
             TryClose();
         }
 
+        public void UserManagement()
+        {
+            ActivateItem(IoC.Get<UserDisplayViewModel>());
+        }
+
         public void LogOut()
         {
             // reset the user model to blank fields

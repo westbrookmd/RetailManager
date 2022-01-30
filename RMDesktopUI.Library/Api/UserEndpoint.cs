@@ -59,7 +59,7 @@ namespace RMDesktopUI.Library.Api
                 }
             }
         }
-        public async Task AddUserFromRole(string userId, string roleName)
+        public async Task RemoveUserFromRole(string userId, string roleName)
         {
             var data = new { userId, roleName };
             using (HttpResponseMessage response = await _apiHelper.ApiClient.PostAsJsonAsync("/api/User/Admin/RemoveRole", data))
